@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Get staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+# Filter only files supported by Prettier
+FORMATTABLE_FILES=$(echo "$STAGED_FILES" | grep -E '\.(js|jsx|ts|tsx|json|css|scss|md|html|yml|yaml)$' || true)
+
+# 종료 조건: 포맷 대상이 없으면 바로 종료
+[ -z "$FORMATTABLE_FILES" ] && exit 0
+
+echo "✨ Running Prettier on staged files..."
+
+# Run Linter first
+echo "$FORMATTABLE_FILES" | xargs pnpm lint
+
+# Run Prettier and write changes
+echo "$FORMATTABLE_FILES" | xargs pnpm format
+
+# Re-add formatted files to staging
+echo "$FORMATTABLE_FILES" | xargs git add
+
+echo "✅ Prettier formatting complete and files re-staged."
+
+exit 0
